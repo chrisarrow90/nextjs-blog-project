@@ -7,7 +7,6 @@ const ContactForm = () => {
   function handleSubmit(event) {
     event.preventDefault()
 
-    console.log(formData)
     fetch('/api/contact', {
       method: 'POST',
       body: JSON.stringify(formData),

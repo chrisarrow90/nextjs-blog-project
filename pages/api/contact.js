@@ -1,7 +1,8 @@
-function handler(req, res) {
+import { MongoClient } from 'mongodb'
+
+async function handler(req, res) {
   if (req.method === 'POST') {
     const { name, email, message } = req.body
-    console.log(req.body)
 
     if (
       !email ||
@@ -21,7 +22,24 @@ function handler(req, res) {
       message
     }
 
-    console.log(newMessage)
+    let client
+    try {
+      client = await MongoClient.connect(process.env.MONGO_URI)
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to connected to database' })
+      return
+    }
+
+    try {
+      const db = client.db()
+      const result = await db.collection('messages').insertOne(newMessage)
+      newMessage.id = result.insertedId
+    } catch (error) {
+      client.close()
+      res.status(500).json({ message: 'Failed to save message to database' })
+    }
+
+    client.close()
 
     res.status(201).json({ message: 'Your message has been sent!', data: newMessage })
   }
